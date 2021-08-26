@@ -19,10 +19,23 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function(){
         Route::post('/tweets', 'TweetsController@store');
-        Route::get('/tweets', 'TweetsController@index')->name('home');
+        Route::get('/tweets',
+            'TweetsController@index')
+            ->name('home');
+
+        Route::get('/profiles/{user:username}/follows',
+            'FollowsController@store');
+
+        Route::get(
+            '/profiles/{user:username}/edit',
+            'ProfilesController@edit'
+        )->middleware('can:edit,user');
+
 
 });
-Route::get('/profiles/{user:name}', 'ProfilesController@show')->name('profiles');
+Route::get('/profiles/{user:username}',
+    'ProfilesController@show')
+    ->name('profiles');
 
 Auth::routes();
 
