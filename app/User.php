@@ -2,9 +2,8 @@
 
 namespace App;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -15,18 +14,14 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $fillable = [
-        'name','username', 'email', 'password',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be hidden for arrays.
      *
      * @var array
      */
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     /**
      * The attributes that should be cast to native types.
@@ -37,9 +32,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function getAvatarAttribute()
+    public function getAvatarAttribute($value)
     {
-        return "https://i.pravatar.cc/200?u=" . $this->email;
+        return asset($value ?: '/images/default-avatar.jpg');
+    }
+
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = bcrypt($value);
     }
 
     public function timeline()
@@ -48,16 +48,24 @@ class User extends Authenticatable
 
         return Tweet::whereIn('user_id', $friends)
             ->orWhere('user_id', $this->id)
-            ->latest()->get();
+            ->withLikes()
+            ->orderByDesc('id')
+            ->paginate(50);
     }
 
     public function tweets()
     {
         return $this->hasMany(Tweet::class)->latest();
     }
-    public function path($append=''){
 
-        $path = route('profiles', $this->username);
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    public function path($append = '')
+    {
+        $path = route('profile', $this->username);
 
         return $append ? "{$path}/{$append}" : $path;
     }
