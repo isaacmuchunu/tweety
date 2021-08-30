@@ -16,4 +16,4 @@
 
         {{ $users->links() }}
     </div>
-</x-ap
+</x-app>

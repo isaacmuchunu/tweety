@@ -1,3 +1,4 @@
+
 @auth
     @unless (current_user()->is($user))
         <form method="POST"
